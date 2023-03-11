@@ -1,22 +1,32 @@
 import argparse
-import openai
+import cognite
+import sys
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--api", type=str, required=True)
+    parser.add_argument("--api", type=str)
+    parser.add_argument("--model", type=str, default='text-davinci-001')
+    parser.add_argument("--streaming", type=bool, default=True)
 
-    openai.api_key = parser.parse_args().api
-    model_engine = "text-davinci-003"
+    api_key = parser.parse_args().api
+
+    cognite.llms.openai.set_openai_api_key(api_key)
+
+    model = parser.parse_args().model
+    streaming = parser.parse_args().streaming
+
+    def stream_stdout_manager(x):
+        sys.stdout.write(x)
+        sys.stdout.flush()
+
+    manager = stream_stdout_manager if streaming else print
+
+    llm = cognite.llms.openai.OpenAiLlm(model=model,
+                                        streaming=streaming,
+                                        manager=manager)
 
     while True:
-        prompt = input("prompt: ")
-        response = openai.Completion.create(
-            engine=model_engine,
-            prompt=prompt,
-            max_tokens=512,
-            n=1,
-            stop=None,
-            temperature=0.5,
-        ).choices[0].text
-        print(f"response: {response}")
+        prompt = input("Prompt: ")
+        llm(prompt=prompt)
+        print()
