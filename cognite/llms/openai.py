@@ -139,3 +139,26 @@ class OpenAiChatLlm:
             chat_completion = response['choices'][0]['message']['content']
 
         return chat_completion
+
+class OpenAiEmbedding:
+
+    def __init__(self, model: str = 'text-embedding-ada-002') -> None:
+        """OpenAI Embedding API wrapper
+        Args:
+            model (str): model used for embedding.
+        """
+        self.model = model
+
+    def __call__(self, text: str) -> List[float]:
+        """returns embedding for text
+        Args:
+            text (str): text to be embedded
+        Returns:
+            List[float]: embedding vector in 1536 dimensions
+        """
+        response = openai.Embedding.create(
+            model=self.model,
+            input=text,
+        )
+        return response['data'][0]['embedding']
+    
