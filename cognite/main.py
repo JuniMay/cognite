@@ -1,51 +1,42 @@
 import argparse
 import cognite
-import sys
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--api", type=str)
-    parser.add_argument("--model", type=str, default='gpt-3.5-turbo')
+    parser.add_argument("--api-key", type=str)
+    parser.add_argument("--model", type=str, default='text-davinci-003')
+    parser.add_argument("--embedding-model",
+                        type=str,
+                        default='text-embedding-ada-002')
     parser.add_argument("--streaming", type=bool, default=True)
 
-    api_key = parser.parse_args().api
+    args = parser.parse_args()
 
-    cognite.llms.openai.set_openai_api_key(api_key)
+    cognite.llms.openai.set_openai_api_key(args.api_key)
+    model = cognite.llms.openai.OpenAiLlm(model=args.model,
+                                          streaming=args.streaming,
+                                          manager=None)
 
-    model = parser.parse_args().model
-    streaming = parser.parse_args().streaming
+    prompt_template = cognite.PromptTemplate(
+        """You are a artificial intelligence named Cognite. Your job is helping users with their problem.
+        
+        You performs like a chatbot. With a given user input, you will generate a response according to the current input and the conversation history. You need to notice the information given by the user.
+        
+        Now, the conversation history is as following:
+        
+        {history}
+        
+        User: {user_input}
+        Cognite: 
+        """,
+        variables=['user_input', 'history'])
 
-    def stream_stdout_manager(x):
-        sys.stdout.write(x)
-        sys.stdout.flush()
+    llm_chain = cognite.LlmChain(model=model,
+                                 prompt_template=prompt_template,
+                                 streaming=args.streaming,
+                                 generators=[])
 
-    manager = stream_stdout_manager if streaming else print
+    repl = cognite.Repl(llm_chain)
 
-    # llm = cognite.llms.openai.OpenAiLlm(model=model,
-    #                                     streaming=streaming,
-    #                                     manager=manager)
-
-    chat_llm = cognite.llms.openai.OpenAiChatLlm(model=model,
-                                                 streaming=streaming,
-                                                 manager=manager)
-
-    # while True:
-    #     prompt = input("Prompt: ")
-    #     llm(prompt=prompt)
-    #     print()
-
-    system_prompt = "This is a chatbot that can generate a response to a user input. You can ask it to do anything, but it's best at answering questions about the world. Try asking it about the weather, or about the coronavirus. You can also ask it to tell you a joke, or to sing you a song. It's also good at playing games like tic-tac-toe. If you want to play a game, just say 'play a game'. If you want to stop playing a game, just say 'stop'."
-    history = []
-    while True:
-        user_input = input("Human: ")
-        completion = chat_llm(system_prompt=system_prompt,
-                              user_input=user_input,
-                              history=history)
-
-        history.append((user_input, completion))
-
-        if len(history) > 10:
-            history.pop(0)
-
-        print()
+    repl.run()

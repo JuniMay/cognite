@@ -1,5 +1,6 @@
 import os
 import openai
+from cognite.llms.base import Llm, ChatLlm, Embedding
 from typing import Optional, Callable, List, Tuple
 
 
@@ -18,25 +19,31 @@ def set_openai_api_key(api_key: Optional[str] = None) -> None:
     openai.api_key = api_key
 
 
-class OpenAiLlm:
+class OpenAiLlm(Llm):
 
     def __init__(self,
                  model: str,
                  streaming: bool = False,
+                 temperature: float = 0.5,
+                 top_p: int = 1,
+                 max_tokens: int = 512,
+                 stop: Optional[str | list] = None,
                  manager: Optional[Callable[[str], None]] = None) -> None:
         """OpenAI Completion API wrapper
         """
 
         self.model = model
         self.streaming = streaming
+        self.temperature = temperature
+        self.top_p = top_p
+        self.max_tokens = max_tokens
+        self.stop = stop
         self.manager = manager
 
-    def __call__(self,
-                 prompt: str,
-                 temperature: float = 0.5,
-                 top_p: int = 1,
-                 max_tokens: int = 512,
-                 stop: Optional[str | list] = None) -> str:
+    def complete(
+        self,
+        prompt: str,
+    ) -> str:
 
         completion = ""
 
@@ -44,11 +51,11 @@ class OpenAiLlm:
             response = openai.Completion.create(
                 model=self.model,
                 prompt=prompt,
-                temperature=temperature,
-                top_p=top_p,
-                max_tokens=max_tokens,
+                temperature=self.temperature,
+                top_p=self.top_p,
+                max_tokens=self.max_tokens,
                 stream=True,
-                stop=stop,
+                stop=self.stop,
             )
             for chunk in response:
                 if self.manager is not None:
@@ -60,11 +67,11 @@ class OpenAiLlm:
             response = openai.Completion.create(
                 model=self.model,
                 prompt=prompt,
-                temperature=temperature,
-                top_p=top_p,
-                max_tokens=max_tokens,
+                temperature=self.temperature,
+                top_p=self.top_p,
+                max_tokens=self.max_tokens,
                 stream=False,
-                stop=stop,
+                stop=self.stop,
             )
             if self.manager is not None:
                 self.manager(response['choices'][0]['text'])
@@ -74,24 +81,30 @@ class OpenAiLlm:
         return completion
 
 
-class OpenAiChatLlm:
+class OpenAiChatLlm(ChatLlm):
 
     def __init__(self,
                  model: str,
                  streaming: bool = False,
-                 manager: Optional[Callable[[str], None]] = None) -> None:
-        self.model = model
-        self.streaming = streaming
-        self.manager = manager
-
-    def __call__(self,
-                 system_prompt: str,
-                 user_input: str,
-                 history: Optional[List[Tuple[str, str]]] = None,
                  temperature: float = 0.5,
                  top_p: int = 1,
                  max_tokens: int = 512,
-                 stop: Optional[str | list] = None) -> str:
+                 stop: Optional[str | list] = None,
+                 manager: Optional[Callable[[str], None]] = None) -> None:
+        self.model = model
+        self.streaming = streaming
+        self.temperature = temperature
+        self.top_p = top_p
+        self.max_tokens = max_tokens
+        self.stop = stop
+        self.manager = manager
+
+    def chat(
+        self,
+        system_prompt: str,
+        user_input: str,
+        history: Optional[List[Tuple[str, str]]] = None,
+    ) -> str:
 
         messages = [{"role": "system", "content": system_prompt}]
 
@@ -108,11 +121,11 @@ class OpenAiChatLlm:
             response = openai.ChatCompletion.create(
                 model=self.model,
                 messages=messages,
-                temperature=temperature,
-                top_p=top_p,
-                max_tokens=max_tokens,
+                temperature=self.temperature,
+                top_p=self.top_p,
+                max_tokens=self.max_tokens,
                 stream=True,
-                stop=stop,
+                stop=self.stop,
             )
             for chunk in response:
                 if chunk['choices'][0]['delta'].get('content') is None:
@@ -127,11 +140,11 @@ class OpenAiChatLlm:
             response = openai.ChatCompletion.create(
                 model=self.model,
                 messages=messages,
-                temperature=temperature,
-                top_p=top_p,
-                max_tokens=max_tokens,
+                temperature=self.temperature,
+                top_p=self.top_p,
+                max_tokens=self.max_tokens,
                 stream=False,
-                stop=stop,
+                stop=self.stop,
             )
             if self.manager is not None:
                 self.manager(response['choices'][0]['message']['content'])
@@ -140,7 +153,8 @@ class OpenAiChatLlm:
 
         return chat_completion
 
-class OpenAiEmbedding:
+
+class OpenAiEmbedding(Embedding):
 
     def __init__(self, model: str = 'text-embedding-ada-002') -> None:
         """OpenAI Embedding API wrapper
@@ -149,7 +163,7 @@ class OpenAiEmbedding:
         """
         self.model = model
 
-    def __call__(self, text: str) -> List[float]:
+    def embed(self, text: str) -> List[float]:
         """returns embedding for text
         Args:
             text (str): text to be embedded
@@ -161,4 +175,3 @@ class OpenAiEmbedding:
             input=text,
         )
         return response['data'][0]['embedding']
-    
