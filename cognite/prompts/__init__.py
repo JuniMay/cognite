@@ -1,0 +1,1 @@
+from cognite.prompts import template

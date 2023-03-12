@@ -1,0 +1,21 @@
+name: template
+description: Template for a new prompt
+author: Cognite
+version: 0.0.1
+mode: text
+# --prompt--
+prompt: |
+  apple, banana, cherry, they are fruits.
+  carrot, cucumber, they are vegetables.
+  soccer, baseball, they are sports.
+  %input1%, %input2%, they are 
+stop: .
+# --variables--
+variables:
+  input1:
+    description: Input
+    required: true
+  input2:
+    description: Input
+    required: false
+    default: ''

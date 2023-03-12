@@ -18,19 +18,7 @@ def main():
                                           streaming=args.streaming,
                                           manager=None)
 
-    prompt_template = cognite.PromptTemplate(
-        """You are a artificial intelligence named Cognite. Your job is helping users with their problem.
-        
-        You performs like a chatbot. With a given user input, you will generate a response according to the current input and the conversation history. You need to notice the information given by the user.
-        
-        Now, the conversation history is as following:
-        
-        {history}
-        
-        User: {user_input}
-        Cognite: 
-        """,
-        variables=['user_input', 'history'])
+    prompt_template = cognite.PromptTemplate('cognite/prompts/chat_gpt3.yaml')
 
     llm_chain = cognite.LlmChain(model=model,
                                  prompt_template=prompt_template,

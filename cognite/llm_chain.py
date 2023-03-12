@@ -1,22 +1,13 @@
 from cognite.llms.base import Llm
 from cognite.generator import Generator
+from cognite.prompts.template import PromptTemplate
 from typing import List, Dict
 from rich.console import Console
 from rich.markdown import Markdown
 
 
-class PromptTemplate:
-
-    def __init__(self, template: str, variables: List[str]) -> None:
-        self.template = template
-        self.variables = variables
-
-    def format(self, **kwargs) -> str:
-        return self.template.format(**kwargs)
-
-
 class LlmChain:
-
+    # TODO: add stop support
     def __init__(self,
                  model: Llm,
                  prompt_template: PromptTemplate,
@@ -34,30 +25,9 @@ class LlmChain:
 
         self.generators = generators
 
-    def format_prompt(self, **kwargs) -> str:
-        self.current_history_entry = kwargs
 
-        if 'user_input' not in kwargs:
-            raise ValueError("user_input must be provided")
-
-        if 'history' in self.prompt_template.variables:
-            history = "====="
-            for entry in self.history:
-                for field, content in entry.items():
-                    history += f"{field}: {content}"
-
-                history += "====="
-
-            kwargs['history'] = history
-
-        # print(kwargs)
-
-        return self.prompt_template.format(**kwargs)
-
-    def interact(self, user_input, **kwargs) -> str:
-        kwargs['user_input'] = user_input
-        prompt = self.format_prompt(**kwargs)
-
+    def interact(self, **kwargs) -> str:
+        prompt = self.prompt_template.get_prompt(**kwargs)
         response = self.model.complete(prompt)
 
         self.current_history_entry['response'] = response
@@ -90,10 +60,13 @@ class Repl:
     def run(self) -> None:
         while True:
             kwargs = {}
+            kwargs['input'] = input(f"input: ")
+            history = "====="
+            for entry in self.llm_chain.history:
+                for field, content in entry.items():
+                    history += f"{field}: {content}"
 
-            for variable in self.llm_chain.prompt_template.variables:
-                if variable == 'history':
-                    continue
-                kwargs[variable] = input(f"{variable}: ")
-                response = self.llm_chain.interact(**kwargs)
-                self.console.print(Markdown(response))
+                history += "====="
+            kwargs['history'] = history
+            response = self.llm_chain.interact(**kwargs)
+            self.console.print(Markdown(response))
