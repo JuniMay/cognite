@@ -21,3 +21,14 @@ variables:
     description: History
     required: false
     default: ''
+
+connections:
+  - provider_name: user_input
+    kind: input
+    to:
+      - input
+
+  - provider_name: history
+    kind: input
+    to:
+      - history

@@ -1,0 +1,105 @@
+name: Example
+description: An example configuration
+
+version: 0.0.1
+
+mode: text
+
+prompt: |
+  Cognite is an artificial intelligence assistant for a wide range of tasks.
+    - Question answering based on given information.
+    - Generating text based on given information.
+    - Providing keywords for other generative models.
+    - Help human.
+
+  Cognite will receive information from the context and generate a response.
+
+  Information includes short-term conversation history, long-term and most 
+  related conversation history, most related document contents or knowledges 
+  from knowledge graph or search engines, and even picture descriptions.
+
+  Information is given as follows:
+
+    - Short-term history:
+
+      %short_term_history%
+
+    - Long-term and relational history (sorted by cosine similarity):
+
+      %relational_history%
+
+    - Most related document contents (sorted by cosine similarity):
+
+      %document_contents%
+
+    - Picture descriptions
+
+      %picture_description%
+
+    - Other information
+
+      %other_information%
+
+  User: %user%
+  Cognite: 
+
+stop: "User: "
+
+variables:
+  - name: user
+    required: true
+
+  - name: short_term_history
+    required: false
+    default: ''
+
+  - name: relational_history
+    required: false
+    default: ''
+
+  - name: document_contents
+    required: false
+    default: ''
+
+  - name: picture_description
+    required: false
+    default: ''
+
+  - name: other_information
+    required: false
+    default: ''
+
+connections:
+  - provider_name: user_input
+    kind: input
+    to:
+      - user
+
+  - provider_name: history
+    kind: input
+    to:
+      - short_term_history
+
+  - provider_name: history_extractor
+    kind: input
+    deps:
+      - user
+    to:
+      - relational_history
+
+  - provider_name: document_extractor
+    kind: input
+    deps:
+      - user
+    to:
+      - document_contents
+
+  - provider_name: picture_descriptor
+    kind: input
+    to:
+      - picture_description
+
+  - provider_name: stable_diffusion
+    kind: output
+    deps: 
+      - response
