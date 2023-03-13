@@ -18,7 +18,7 @@ def main():
                                           streaming=args.streaming,
                                           manager=None)
 
-    prompt_template = cognite.PromptTemplate('cognite/prompts/chat_gpt3.yaml')
+    prompt_template = cognite.PromptTemplate('prompts/chat_gpt3.yaml')
 
     llm_chain = cognite.LlmChain(model=model,
                                  prompt_template=prompt_template,

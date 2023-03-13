@@ -1,7 +1,7 @@
 import os
 import openai
 from cognite.llms.base import Llm, ChatLlm, Embedding
-from typing import Optional, Callable, List, Tuple
+from typing import Optional, Callable, List, Tuple, Union
 
 
 def set_openai_api_key(api_key: Optional[str] = None) -> None:
@@ -27,7 +27,7 @@ class OpenAiLlm(Llm):
                  temperature: float = 0.5,
                  top_p: int = 1,
                  max_tokens: int = 512,
-                 stop: Optional[str | list] = None,
+                 stop: Optional[Union[str, List]] = None,
                  manager: Optional[Callable[[str], None]] = None) -> None:
         """OpenAI Completion API wrapper
         """
@@ -89,7 +89,7 @@ class OpenAiChatLlm(ChatLlm):
                  temperature: float = 0.5,
                  top_p: int = 1,
                  max_tokens: int = 512,
-                 stop: Optional[str | list] = None,
+                 stop: Optional[Union[str, List]] = None,
                  manager: Optional[Callable[[str], None]] = None) -> None:
         self.model = model
         self.streaming = streaming
