@@ -1,4 +1,4 @@
-from cognite.executor import Executor
+from cognite.executor.executor import Executor
 from cognite.llms.base import Llm
 from cognite.prompts.template import PromptTemplate
 from typing import List, Dict, Any

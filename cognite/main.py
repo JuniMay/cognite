@@ -1,7 +1,6 @@
 import argparse
 import cognite
 
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--api-key", type=str)
@@ -18,7 +17,7 @@ def main():
                                           streaming=args.streaming,
                                           manager=None)
 
-    chat = cognite.chat.Chat(model)
+    chat = cognite.executor.chat.Chat(model)
     while True:
         user = input('User: ')
         reply = chat(user)

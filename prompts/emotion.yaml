@@ -1,0 +1,15 @@
+name: emotion
+description: rank the emotion of the text
+author: Cognite
+version: 0.0.1
+mode: text
+# --prompt--
+prompt: |
+  If 0 represents the most negative emotion and 10 represents the most positive emotion, what is the emotion of the following text?
+  %input%
+  The answer is:
+stop: "\n"
+# --variables--
+variables:
+  input:
+    description: Input
