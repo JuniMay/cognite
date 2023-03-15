@@ -18,13 +18,8 @@ def main():
                                           streaming=args.streaming,
                                           manager=None)
 
-    prompt_template = cognite.PromptTemplate('prompts/chat_gpt3.yaml')
-
-    llm_chain = cognite.LlmChain(model=model,
-                                 prompt_template=prompt_template,
-                                 streaming=args.streaming,
-                                 generators=[])
-
-    repl = cognite.Repl(llm_chain)
-
-    repl.run()
+    chat = cognite.chat.Chat(model)
+    while True:
+        user = input('User: ')
+        reply = chat(user)
+        print(f'Cognite: {reply}')

@@ -10,14 +10,11 @@ prompt: |
   Now, the conversation history is as following:
   %history%
   User: %input%
-  Cognite:
+  Cognite: 
 stop: "User: "
 # --variables--
 variables:
   input:
     description: Input
-    required: true
   history:
     description: History
-    required: false
-    default: ''
