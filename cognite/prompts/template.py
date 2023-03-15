@@ -15,8 +15,7 @@ class Variable(object):
         """
         self.name = name
         self.description = description
-        self.required = required
-        self.default = default
+    
     
     def __str__(self) -> str:
         return f"{self.name}: {self.description}"
@@ -30,6 +29,7 @@ class PromptTemplate(object):
         """
         self.file_path = file_path
         self._load_template()
+        self._check_valid()
     
     def _load_template(self) -> None:
         """load template from file
@@ -73,25 +73,25 @@ class PromptTemplate(object):
         for variable in self.variables:
             print(f"\t{variable}")
     
-    def check_valid(self) -> None:
+    def _check_valid(self) -> None:
         """check if the variables and prompt are corresponding
 
         Raises:
             ValueError: invalid variable or prompt
         """
-        for variable in self.variables:
-            if variable.required and variable.default is None:
-                raise ValueError(f"template {self.name} has required variable {variable.name} without default value")
+        # for variable in self.variables:
+        #     if not variable.required and not variable.default:
+        #         raise ValueError(f"template {self.name} has optinal variable {variable.name} without default value")
         for variable_name in self.variable_names:
             if f'%{variable_name}%' not in self.prompt:
                 raise ValueError(f"template {self.name} has variable {variable_name} not in prompt")
-        regex = re.compile(r'%\w+%')
-        for variable_name in regex.findall(self.prompt):
-            if variable_name[1:-1] not in self.variable_names:
-                raise ValueError(f"template {self.name} has invalid variable {variable_name} in prompt")
+        # regex = re.compile(r'%\w+%')
+        # for variable_name in regex.findall(self.prompt):
+        #     if variable_name[1:-1] not in self.variable_names:
+        #         raise ValueError(f"template {self.name} has invalid variable {variable_name} in prompt")
         
 
-    def get_prompt(self, **kwargs) -> str:
+    def __call__(self, **kwargs) -> str:
         """get prompt with variables replaced
 
         Args:
@@ -103,20 +103,15 @@ class PromptTemplate(object):
             str: prompt
         """
         prompt = self.prompt
-        for name, value in kwargs.items():
-            if name not in self.variable_names:
-                raise ValueError(f"Invalid variable: {name}")
-            prompt = prompt.replace(f'%{name}%', value)
-        regex = re.compile(r'%\w+%')
-        missing_variables = regex.findall(prompt)
-        for variable_name in missing_variables:
-            variable_name = variable_name[1:-1]
-            # TODO: use dict to optimize
-            for variable in self.variables:
-                if variable.name == variable_name:
-                    if variable.default is not None:
-                        prompt = prompt.replace(f'%{variable_name}%', variable.default)
-                    else:
-                        raise ValueError(f"Missing variable: {variable_name}")
+        for variable in self.variable_names:
+            if variable in kwargs:
+                prompt = prompt.replace(f'%{variable}%', kwargs[variable])
+            else:
+                raise ValueError(f"Missing variable: {variable}")
+            for name, value in kwargs.items():
+                if name not in self.variable_names:
+                    # TODO: rewrite this as warning
+                    raise ValueError(f"Invalid variable: {name}")
+                
         return prompt.strip()
 
