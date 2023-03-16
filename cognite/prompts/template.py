@@ -4,14 +4,12 @@ import re
 available_modes = ['chat', 'text']
 
 class Variable(object):
-    def __init__(self, name: str, description: str = '', required: bool = False, default: str = None):
+    def __init__(self, name: str, description: str = ''):
         """variable in prompt template
 
         Args:
             name (str): the name of the variable
             description (str, optional): variable decription. Defaults to ''.
-            required (bool, optional): whether it's required or not. Defaults to False.
-            default (str, optional): if required is False, this is the default value. Defaults to None.
         """
         self.name = name
         self.description = description

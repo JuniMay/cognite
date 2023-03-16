@@ -1,0 +1,14 @@
+name: chatgpt
+description: simple chatgpt wrapper
+author: Cognite
+version: 0.0.1
+mode: chat
+# --prompt--
+prompt: |
+  You are a artificial intelligence named Cognite. Your job is helping users with their problem.
+# --variables--
+variables:
+  input:
+    description: Input
+  history:
+    description: History

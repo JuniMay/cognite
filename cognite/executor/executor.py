@@ -10,22 +10,20 @@ class Executor:
             self.prompt_templates: Dict[str, PromptTemplate] = {prompt.name: prompt for prompt in prompt_templates}
         
     # def __getattribute__(self, __name: str) -> PromptTemplate:
-    #     if __name == 'prompt_templates':
-    #         return 
-    #     if __name in self.prompt_templates.keys():
+    #     if __name in super().prompt_templates.keys():
     #         return self.prompt_templates[__name]
     #     else:
-    #         raise AttributeError(f"Executor has no promt nemed {__name}")         
+    #         super().__getattribute__(__name)      
     
     def registered_prompts(self) -> List[PromptTemplate]:
         return self.prompt_templates
 
     def register_prompt(self, prompt_templates: List[PromptTemplate]) -> None:
-        if prompt_templates.isinstance(PromptTemplate):
+        if isinstance(prompt_templates, PromptTemplate):
             if prompt_templates.name in self.prompt_templates.keys():
                 raise ValueError(f"Prompt {prompt_templates.name} already registered")
             self.prompt_templates[prompt_templates.name] = prompt_templates
-        elif prompt_templates.isinstance(List):
+        elif isinstance(prompt_templates, List):
             for prompt in prompt_templates:
                 self.register_prompt(prompt)
         else:

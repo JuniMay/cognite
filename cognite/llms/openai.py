@@ -152,6 +152,45 @@ class OpenAiChatLlm(ChatLlm):
             chat_completion = response['choices'][0]['message']['content']
 
         return chat_completion
+    
+    def chat_raw(self, raw_messages: List[dict]) -> str:
+        chat_completion = ""
+
+        if self.streaming:
+            response = openai.ChatCompletion.create(
+                model=self.model,
+                messages=raw_messages,
+                temperature=self.temperature,
+                top_p=self.top_p,
+                max_tokens=self.max_tokens,
+                stream=True,
+                stop=self.stop,
+            )
+            for chunk in response:
+                if chunk['choices'][0]['delta'].get('content') is None:
+                    continue
+
+                if self.manager is not None:
+                    self.manager(chunk['choices'][0]['delta']['content'])
+
+                chat_completion += chunk['choices'][0]['delta']['content']
+
+        else:
+            response = openai.ChatCompletion.create(
+                model=self.model,
+                messages=raw_messages,
+                temperature=self.temperature,
+                top_p=self.top_p,
+                max_tokens=self.max_tokens,
+                stream=False,
+                stop=self.stop,
+            )
+            if self.manager is not None:
+                self.manager(response['choices'][0]['message']['content'])
+
+            chat_completion = response['choices'][0]['message']['content']
+
+        return chat_completion
 
 
 class OpenAiEmbedding(Embedding):
