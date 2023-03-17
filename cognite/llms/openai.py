@@ -40,7 +40,7 @@ class OpenAiLlm(Llm):
         self.stop = stop
         self.manager = manager
 
-    def complete(
+    async def complete(
         self,
         prompt: str,
     ) -> str:
@@ -57,11 +57,12 @@ class OpenAiLlm(Llm):
                 stream=True,
                 stop=self.stop,
             )
-            for chunk in response:
-                if self.manager is not None:
-                    self.manager(chunk['choices'][0]['text'])
+            return await (chunk['choices'][0]['text'] async for chunk in response)
+            # for chunk in response:
+            #     if self.manager is not None:
+            #         self.manager(chunk['choices'][0]['text'])
 
-                completion += chunk['choices'][0]['text']
+            #     completion += chunk['choices'][0]['text']
 
         else:
             response = openai.Completion.create(

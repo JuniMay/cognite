@@ -1,0 +1,1 @@
+from cognite.extensions.azure import speach

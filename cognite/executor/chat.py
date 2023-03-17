@@ -16,7 +16,11 @@ class Chat(Executor):
             history_str += f'User: {usr}\nCognite: {rply}\n'
         prompt = self.chat_gpt3(history=history_str, input=user_input)
         response = self.llm.complete(prompt)
-        self.history.append((user_input, response))
+        res = ''
+        for x in response:
+            print(x)
+            res += x
+        self.history.append((user_input, res))
         if len(self.history) > self.max_history:
             self.history.pop(0)
-        return response
+        return res

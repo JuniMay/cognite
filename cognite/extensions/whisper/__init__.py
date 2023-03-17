@@ -1,0 +1,1 @@
+from cognite.extensions.whisper import whisper
